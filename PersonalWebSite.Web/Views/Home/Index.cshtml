@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="main-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="glitch">Sude Nur Akyıldız</h1>
+                        <div class="typing-text">
+                            <span class="typed"></span>
+                        </div>
+                        <p class="hero-description">
+                            Bilecik Üniversitesi Bilgisayar Mühendisliği öğrencisiyim. Sürekli öğrenmeye açık ve farklı bakış açılarına değer veren biriyim. Her zaman en iyisini yapmaya çalışır ve karşılaştığım zorlukların üstesinden gelmek için çözüm odaklı yaklaşırım.
+                        </p>
+                        <div class="hero-buttons">
+                            <a href="https://github.com/Sudeakyildz" class="btn btn-github" target="_blank">
+                                <i class="fab fa-github"></i> GitHub
+                            </a>
+                            <a href="https://www.linkedin.com/in/sude-a-9592b3343/" class="btn btn-linkedin" target="_blank">
+                                <i class="fab fa-linkedin"></i> LinkedIn
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <img src="~/images/ben.png" alt="Sude Nur Akyıldız" class="profile-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section class="skills-section">
+        <div class="container">
+            <h2 class="section-title">Yeteneklerim</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <div class="skill-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3>Programlama Dilleri</h3>
+                    <p>HTML, CSS, JavaScript, Python, Node.js, Java, C#, C++, C, MySQL, MSSQL, PostgreSQL</p>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">
+                        <i class="fas fa-window-maximize"></i>
+                    </div>
+                    <h3>Teknolojiler</h3>
+                    <p>React.js, Express.js, Docker, ASP.NET Core</p>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-icon">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h3>Diller</h3>
+                    <p>İngilizce (Orta), Almanca (Temel)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="experience-section">
+        <div class="container">
+            <h2 class="section-title">Projelerim</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Web Tabanlı Kafe Sipariş Programı</h3>
+                        <p>QR kod ile sipariş verme sistemi. Kullanıcılar QR kod ile sisteme erişip ürünleri sepete ekleyebilir ve sipariş sürecini tamamlayabilirler. Tüm işlemler veritabanında saklanır ve admin paneli üzerinden siparişler takip edilir.</p>
+                        <div class="tech-stack">
+                            <span>Frontend:</span> HTML, CSS, JavaScript
+                            <span>Backend:</span> Node.js, Express.js
+                            <span>Veritabanı:</span> MySQL
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section class="skills-section">
+        <div class="container">
+            <h2 class="section-title">Deneyim</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Python Geliştirme</h3>
+                        <p>Python programlama dili ile uygulama geliştirme ve veri analizi projeleri</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Web Geliştirme</h3>
+                        <p>Modern web teknolojileri ile kullanıcı dostu uygulamalar geliştirme</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>C/C++ Geliştirme</h3>
+                        <p>Sistem programlama ve düşük seviyeli uygulama geliştirme</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section class="experience-section">
+        <div class="container">
+            <h2 class="section-title">Eğitim</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Bilecik Üniversitesi</h3>
+                        <p>Bilgisayar Mühendisliği (3. Sınıf)</p>
+                        <p>2022 - Devam Ediyor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Q&A Section -->
+    <section class="qa-section">
+        <div class="container">
+            <div class="qa-card">
+                <div class="qa-content">
+                    <h2>Soru & Cevap</h2>
+                    <p>Yazılım geliştirme, web teknolojileri ve programlama konularında sorularınızı yanıtlamaktan mutluluk duyarım.</p>
+                    <a asp-controller="Question" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-list"></i> Soruları Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script>
+        // Typing animation
+        const typed = new Typed('.typed', {
+            strings: ['Bilgisayar Mühendisliği Öğrencisi', 'Bilgisayar Mühendisliği', 'Bilgisayar Mühendisliği'],
+            typeSpeed: 50,
+            backSpeed: 30,
+            loop: true
+        });
+    </script>
+}

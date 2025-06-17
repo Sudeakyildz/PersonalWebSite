@@ -1,0 +1,35 @@
+@model IEnumerable<PersonalWebSite.Web.Models.QuestionViewModel>
+
+@{
+    ViewData["Title"] = "Sorular";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Sorular</h1>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-action="Create" class="btn btn-primary">Yeni Soru</a>
+        }
+    </div>
+
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Title</h5>
+                        <p class="card-text">@(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                @item.UserName tarafından @item.CreatedAt.ToString("dd.MM.yyyy HH:mm") tarihinde soruldu
+                            </small>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Detaylar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div> 

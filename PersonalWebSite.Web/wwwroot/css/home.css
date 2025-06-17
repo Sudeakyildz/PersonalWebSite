@@ -1,0 +1,301 @@
+:root {
+    --primary-color: #4A90E2;
+    --secondary-color: #50E3C2;
+    --background-color: #F8F9FA;
+    --text-color: #2C3E50;
+    --card-bg: #FFFFFF;
+    --gradient-start: #4A90E2;
+    --gradient-end: #50E3C2;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+}
+
+.main-wrapper {
+    overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 100px 0;
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.glitch {
+    font-size: 4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    position: relative;
+    color: var(--text-color);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.typing-text {
+    font-size: 1.5rem;
+    margin: 20px 0;
+    color: var(--primary-color);
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    margin: 30px 0;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn {
+    padding: 12px 30px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-github {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-linkedin {
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.hero-image {
+    position: relative;
+}
+
+.profile-image {
+    width: 400px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 30px;
+    border: 5px solid var(--card-bg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Skills Section */
+.skills-section {
+    padding: 100px 0;
+    background: var(--card-bg);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    position: relative;
+    color: var(--text-color);
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+.skill-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.skill-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.skill-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.skill-card h3 {
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.skill-card p {
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* Timeline Sections */
+.experience-section {
+    padding: 100px 0;
+    background: var(--background-color);
+}
+
+.timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+}
+
+.timeline-item {
+    margin-bottom: 50px;
+    position: relative;
+}
+
+.timeline-content {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;
+    position: relative;
+    width: calc(50% - 30px);
+    margin-left: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.timeline-content h3 {
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.timeline-content p {
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.tech-stack {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.tech-stack span {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-right: 5px;
+}
+
+/* Q&A Section */
+.qa-section {
+    padding: 100px 0;
+    background: var(--card-bg);
+}
+
+.qa-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 50px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.qa-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.qa-content p {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+    .hero-section {
+        text-align: center;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .profile-image {
+        width: 300px;
+        height: 300px;
+        margin: 50px auto;
+    }
+
+    .timeline::before {
+        left: 30px;
+    }
+
+    .timeline-content {
+        width: calc(100% - 60px);
+        margin-left: 60px;
+    }
+
+    .timeline-item:nth-child(even) .timeline-content {
+        margin-left: 60px;
+    }
+}
+
+@media (max-width: 576px) {
+    .glitch {
+        font-size: 2.5rem;
+    }
+
+    .profile-image {
+        width: 250px;
+        height: 250px;
+    }
+
+    .skills-grid {
+        grid-template-columns: 1fr;
+    }
+} 

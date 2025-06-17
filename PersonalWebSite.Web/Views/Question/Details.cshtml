@@ -1,0 +1,141 @@
+@model PersonalWebSite.Web.Models.QuestionViewModel
+
+@{
+    ViewData["Title"] = "Soru Detayı";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.Title</h2>
+                    <p class="card-text">@Model.Content</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            @Model.UserName tarafından @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm") tarihinde soruldu
+                        </small>
+                        @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.Identity.Name == Model.UserName))
+                        {
+                            <div>
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">Düzenle</a>
+                                <a asp-action="DeleteTest" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bu soruyu silmek istediğinizden emin misiniz?')">Sil</a>
+                            </div>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <div class="mt-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-comments"></i> Cevaplar (@Model.Answers.Count)
+                        </h5>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-shield-alt text-primary"></i>
+                                        <span>Admin Cevabı</span>
+                                    </h6>
+                                    <form asp-controller="Answer" asp-action="Create" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="questionId" value="@Model.Id" />
+                                        <div class="mb-3">
+                                            <textarea name="Content" class="form-control" rows="3" required placeholder="Admin olarak cevabınızı yazın..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i> Cevabı Gönder
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        }
+                        else if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Sadece admin kullanıcıları sorulara cevap verebilir.
+                            </div>
+                        }
+
+                        @if (Model.Answers.Any())
+                        {
+                            <div class="answers-list">
+                                @foreach (var answer in Model.Answers.OrderByDescending(a => a.CreatedAt))
+                                {
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <p class="card-text">@answer.Content</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    @if (answer.UserName == "Admin")
+                                                    {
+                                                        <i class="fas fa-shield-alt text-primary"></i>
+                                                    }
+                                                    @answer.UserName tarafından @answer.CreatedAt.ToString("dd.MM.yyyy HH:mm") tarihinde cevaplandı
+                                                </small>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <div>
+                                                        <a asp-controller="Answer" asp-action="Edit" asp-route-id="@answer.Id" class="btn btn-outline-primary btn-sm">Düzenle</a>
+                                                        <a asp-controller="Answer" asp-action="DeleteTest" asp-route-id="@answer.Id" class="btn btn-outline-danger btn-sm" onclick="return confirm('Bu cevabı silmek istediğinizden emin misiniz?')">Sil</a>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle"></i> Bu soruya henüz cevap verilmemiş.
+                            </div>
+                        }
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            <div>
+                                @if (User.Identity.IsAuthenticated && (User.IsInRole("Admin") || Model.UserName == User.Identity.Name))
+                                {
+                                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;" id="deleteForm">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Sil
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function() {
+                var content = $(this).find('textarea[name="Content"]').val();
+                if (!content || content.trim() === '') {
+                    alert('Lütfen bir cevap yazın.');
+                    return false;
+                }
+                return true;
+            });
+
+            $('#deleteForm').on('submit', function(e) {
+                e.preventDefault();
+                if (confirm('Bu soruyu silmek istediğinizden emin misiniz?')) {
+                    this.submit();
+                }
+            });
+        });
+    </script>
+} 
