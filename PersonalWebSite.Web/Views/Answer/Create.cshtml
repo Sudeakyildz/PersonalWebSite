@@ -1,0 +1,54 @@
+@model PersonalWebSite.Core.Models.Answer
+
+@{
+    ViewData["Title"] = "Cevap Yaz";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Cevap Yaz</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Soru: @ViewBag.Question.Title</h5>
+                        <p>@ViewBag.Question.Content</p>
+                    </div>
+
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" name="questionId" value="@ViewBag.Question.Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Content" class="control-label">Cevabınız</label>
+                            <textarea asp-for="Content" class="form-control" rows="5" required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        @if (ViewBag.IsAdmin)
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Admin olarak cevap veriyorsunuz.
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Cevabı Gönder
+                            </button>
+                            <a asp-controller="Question" asp-action="Details" asp-route-id="@ViewBag.Question.Id" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 
