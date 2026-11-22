@@ -1,35 +1,91 @@
-@model IEnumerable<PersonalWebSite.Web.Models.QuestionViewModel>
+@model PersonalWebSite.Web.Models.QuestionListViewModel
 
 @{
-    ViewData["Title"] = "Sorular";
+    ViewData["Title"] = "Soru & Cevap";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Sorular</h1>
-        @if (User.Identity?.IsAuthenticated == true)
+<div class="page-header">
+    <div>
+        <h1>Soru &amp; Cevap</h1>
+        <p class="subtitle">@Model.TotalCount soru</p>
+    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Yeni Soru</a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Create", "Question")" class="btn btn-outline-primary">
+            <i class="fas fa-sign-in-alt"></i> Soru sormak için giriş yap
+        </a>
+    }
+</div>
+
+<form method="get" asp-action="Index" class="search-bar input-group mb-4" role="search">
+    <input type="search" name="search" value="@Model.Search" class="form-control" placeholder="Sorularda ara..." aria-label="Sorularda ara" />
+    <button type="submit" class="btn btn-primary" aria-label="Ara"><i class="fas fa-search"></i></button>
+</form>
+
+@if (!Model.Questions.Any())
+{
+    <div class="card empty-state">
+        <div><i class="fas fa-inbox"></i></div>
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
         {
-            <a asp-action="Create" class="btn btn-primary">Yeni Soru</a>
+            <p class="mb-2">“@Model.Search” için sonuç bulunamadı.</p>
+            <a asp-action="Index" class="btn btn-outline-primary btn-sm">Aramayı temizle</a>
+        }
+        else
+        {
+            <p class="mb-0">Henüz soru sorulmamış. İlk soruyu sen sor!</p>
         }
     </div>
-
-    <div class="row">
-        @foreach (var item in Model)
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var item in Model.Questions)
         {
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Title</h5>
-                        <p class="card-text">@(item.Content.Length > 200 ? item.Content.Substring(0, 200) + "..." : item.Content)</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                @item.UserName tarafından @item.CreatedAt.ToString("dd.MM.yyyy HH:mm") tarihinde soruldu
-                            </small>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary">Detaylar</a>
-                        </div>
+            <div class="col-md-6">
+                <article class="card card-hover question-card">
+                    <h2><a asp-action="Details" asp-route-id="@item.Id">@item.Title</a></h2>
+                    <p class="excerpt">@(item.Content.Length > 180 ? item.Content[..180] + "…" : item.Content)</p>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <span class="meta">
+                            <i class="fas fa-user"></i>@item.AuthorName ·
+                            <i class="far fa-clock"></i>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+                        </span>
+                        @if (item.Answers.Any())
+                        {
+                            <span class="pill pill-success"><i class="fas fa-check-circle"></i> @item.Answers.Count cevap</span>
+                        }
+                        else
+                        {
+                            <span class="pill pill-muted"><i class="far fa-hourglass"></i> Cevap bekliyor</span>
+                        }
                     </div>
-                </div>
+                </article>
             </div>
         }
     </div>
-</div> 
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="mt-4" aria-label="Sayfalama">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@(Model.Page - 1)">Önceki</a>
+                </li>
+                @for (var p = 1; p <= Model.TotalPages; p++)
+                {
+                    <li class="page-item @(p == Model.Page ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@p">@p</a>
+                    </li>
+                }
+                <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                    <a class="page-link" asp-action="Index" asp-route-search="@Model.Search" asp-route-page="@(Model.Page + 1)">Sonraki</a>
+                </li>
+            </ul>
+        </nav>
+    }
+}

@@ -1,54 +1,40 @@
-@model PersonalWebSite.Core.Models.Answer
+@model PersonalWebSite.Web.Models.CreateAnswerViewModel
 
 @{
     ViewData["Title"] = "Cevap Yaz";
 }
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Cevap Yaz</h4>
-                </div>
-                <div class="card-body">
-                    <div class="mb-4">
-                        <h5>Soru: @ViewBag.Question.Title</h5>
-                        <p>@ViewBag.Question.Content</p>
-                    </div>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <h1 class="h3 mb-3">Cevap Yaz</h1>
 
-                    <form asp-action="Create" method="post">
-                        <input type="hidden" name="questionId" value="@ViewBag.Question.Id" />
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                        <div class="form-group mb-3">
-                            <label asp-for="Content" class="control-label">Cevabınız</label>
-                            <textarea asp-for="Content" class="form-control" rows="5" required></textarea>
-                            <span asp-validation-for="Content" class="text-danger"></span>
-                        </div>
-
-                        @if (ViewBag.IsAdmin)
-                        {
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Admin olarak cevap veriyorsunuz.
-                            </div>
-                        }
-
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Cevabı Gönder
-                            </button>
-                            <a asp-controller="Question" asp-action="Details" asp-route-id="@ViewBag.Question.Id" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Geri Dön
-                            </a>
-                        </div>
-                    </form>
-                </div>
+            <div class="p-3 mb-4 rounded" style="background:#f4f7fb;">
+                <h2 class="h6">@Model.QuestionTitle</h2>
+                <p class="mb-0 text-muted" style="white-space:pre-line">@Model.QuestionContent</p>
             </div>
+
+            <form asp-action="Create" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="QuestionId" />
+
+                <div class="mb-4">
+                    <label asp-for="Content" class="form-label"></label>
+                    <textarea asp-for="Content" class="form-control" rows="6"></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Question" asp-action="Details" asp-route-id="@Model.QuestionId" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Cevabı Gönder</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-} 
+    <partial name="_ValidationScriptsPartial" />
+}

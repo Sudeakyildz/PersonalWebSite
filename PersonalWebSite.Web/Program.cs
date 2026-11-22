@@ -2,10 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PersonalWebSite.Business.Interfaces;
 using PersonalWebSite.Business.Services;
-using PersonalWebSite.Core.Interfaces;
 using PersonalWebSite.Core.Models;
 using PersonalWebSite.Data;
-using PersonalWebSite.Data.Repositories;
 using PersonalWebSite.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,10 +26,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<PersonalWebSiteDbContext>()
 .AddDefaultTokenProviders();
-
-// Add Repositories
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add Services
 builder.Services.AddScoped<IQuestionService, QuestionService>();
@@ -63,56 +57,78 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+// 404 gibi boş yanıtları şık hata sayfasına yönlendir
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Admin rolü ve varsayılan admin kullanıcısı oluşturma
+// Roller ve (yapılandırmada tanımlıysa) admin kullanıcısı
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<User>>();
 
-        // Admin rolünü oluştur
-        if (!await roleManager.RoleExistsAsync("Admin"))
+        // Kayıt olan kullanıcılar "User" rolüne eklenir, bu yüzden iki rol de var olmalı.
+        foreach (var role in new[] { "Admin", "User" })
         {
-            await roleManager.CreateAsync(new IdentityRole("Admin"));
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
         }
 
-        // Varsayılan admin kullanıcısını oluştur
-        var adminEmail = "sudeaky5@gmail.com";
-        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        // Admin bilgileri koda gömülü değil; AdminUser:* ayarlarından okunur
+        // (appsettings.Development.json, user-secrets veya ortam değişkenleri).
+        var adminEmail = builder.Configuration["AdminUser:Email"];
+        var adminPassword = builder.Configuration["AdminUser:Password"];
 
-        if (adminUser == null)
+        if (!string.IsNullOrWhiteSpace(adminEmail) && !string.IsNullOrWhiteSpace(adminPassword))
         {
-            adminUser = new User
-            {
-                UserName = adminEmail,
-                Email = adminEmail,
-                FirstName = "Sude",
-                LastName = "Akyol"
-            };
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
-            var result = await userManager.CreateAsync(adminUser, "Sude1234!");
-            if (result.Succeeded)
+            if (adminUser == null)
+            {
+                adminUser = new User
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FirstName = builder.Configuration["AdminUser:FirstName"] ?? "Admin",
+                    LastName = builder.Configuration["AdminUser:LastName"] ?? "User"
+                };
+
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                if (!result.Succeeded)
+                {
+                    logger.LogError("Admin kullanıcısı oluşturulamadı: {Errors}",
+                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                    adminUser = null;
+                }
+            }
+
+            if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
             {
                 await userManager.AddToRoleAsync(adminUser, "Admin");
             }
         }
+        else
+        {
+            logger.LogWarning("AdminUser:Email / AdminUser:Password ayarlanmadığı için admin kullanıcısı oluşturulmadı.");
+        }
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Admin rolü veya kullanıcısı oluşturulurken bir hata oluştu.");
+        logger.LogError(ex, "Roller veya admin kullanıcısı oluşturulurken bir hata oluştu.");
     }
 }
-
-// Custom middleware'leri ekle
-app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapControllerRoute(
     name: "default",

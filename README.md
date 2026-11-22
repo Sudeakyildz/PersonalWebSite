@@ -16,8 +16,7 @@ ASP.NET Core MVC ile geliştirilmiş kişisel web sitesi projesi. Kullanıcı ka
 | PersonalWebSite.Core | Modeller, arayüzler |
 | PersonalWebSite.Data | DbContext, repository'ler |
 | PersonalWebSite.Business | İş mantığı servisleri |
-| PersonalWebSite.Web | MVC web uygulaması |
-| PersonalWebSite.API | REST API |
+| PersonalWebSite.Web | MVC web uygulaması (JSON API uçları dahil) |
 
 ## Gereksinimler
 
@@ -50,20 +49,29 @@ ASP.NET Core MVC ile geliştirilmiş kişisel web sitesi projesi. Kullanıcı ka
 
 4. Tarayıcıda açın: **http://localhost:5000**
 
-## Varsayılan Admin Girişi
+## Admin Kullanıcısı
 
-- **E-posta:** sudeaky5@gmail.com  
-- **Şifre:** Sude1234!
+Admin bilgileri koda gömülü değildir; `AdminUser` ayarlarından okunur. Geliştirme için
+`PersonalWebSite.Web/appsettings.Development.json` içinde tanımlıdır. Kendi bilgilerinizi
+kullanmak için user-secrets ya da ortam değişkeni kullanın:
 
-*(İlk çalıştırmada Admin rolü ve bu kullanıcı otomatik oluşturulur.)*
+```bash
+dotnet user-secrets set "AdminUser:Email" "siz@ornek.com" --project PersonalWebSite.Web
+dotnet user-secrets set "AdminUser:Password" "GucluBirSifre1!" --project PersonalWebSite.Web
+```
+
+İlk çalıştırmada `Admin` ve `User` rolleri ile (ayar varsa) admin kullanıcısı otomatik oluşturulur.
+**Gerçek ortamda bu şifreyi mutlaka değiştirin.**
 
 ## Özellikler
 
-- Kullanıcı kayıt ve giriş
+- Kullanıcı kayıt ve giriş (başarısız denemelerde hesap kilitleme)
 - Soru ekleme, düzenleme, silme (sadece sahibi veya Admin)
-- Sorulara cevap yazma
-- Soru/cevap listesi ve detay sayfaları
-- REST API: `/Question/api`, `/Question/api/{id}`, `/Question/api/{id}/answers`
+- Sorulara yalnızca Admin cevap verebilir, düzenleyebilir, silebilir
+- Soru arama ve sayfalama
+- Herkese açık sayfalarda e-posta yerine ad-soyad gösterilir
+- Özel 404 / hata sayfaları
+- REST API (hassas alan içermez): `/Question/api`, `/Question/api/{id}`, `/Question/api/{id}/answers`
 - İstek loglama middleware’i
 
 ## Bağlantı Dizesi

@@ -1,28 +1,99 @@
 ﻿@{
     ViewData["Title"] = "Ana Sayfa";
+    ViewData["FullWidth"] = true;
+
+    var skillGroups = new (string Icon, string Title, string[] Items)[]
+    {
+        ("fa-code", "Programlama", new[] { "Python", "C#", "JavaScript", "SQL", "Java", "C++" }),
+        ("fa-window-maximize", "Frontend", new[] { "React", "Next.js", "HTML5", "CSS3", "Bootstrap", "Vite" }),
+        ("fa-server", "Backend", new[] { "ASP.NET Core", "Node.js", "Express.js", "REST API", "JWT" }),
+        ("fa-brain", "Yapay Zeka & ML", new[] { "TensorFlow", "Keras", "PyTorch", "Scikit-learn", "Transfer Learning", "CNN" }),
+        ("fa-eye", "Bilgisayarlı Görü", new[] { "OpenCV", "YOLOv8", "Mask R-CNN", "EfficientNet", "DeepFace", "MediaPipe" }),
+        ("fa-database", "Veritabanı & Araçlar", new[] { "SQL Server", "MySQL", "PostgreSQL", "SQLite", "Git", "Docker", "Pytest", "Selenium" })
+    };
+
+    var experiences = new (string Role, string Company, string Period, string[] Points, string[] Tech)[]
+    {
+        ("Yazılım Geliştirme Stajyeri", "Icredible", "Şub 2026 – Haz 2026",
+            new[]
+            {
+                "Backend Development ve QA Automation ekiplerinde ürün geliştirme ve otomasyon süreçlerine katkı sağladım.",
+                "ASP.NET Core, Entity Framework Core, SQL Server, JWT ve React ile full-stack e-ticaret platformu geliştirdim.",
+                "Pytest ve SeleniumBase ile Python tabanlı E2E otomasyon framework'ü tasarladım ve sürdürdüm.",
+                "Node.js ile test orkestrasyon paneli oluşturdum: SSE log akışı, test keşfi, ortam yönetimi ve raporlama.",
+                "GitHub OAuth ve e-posta OTP/2FA doğrulama akışlarını otomatikleştirdim."
+            },
+            new[] { "Python", "Pytest", "SeleniumBase", "C#", "ASP.NET Core", "React", "Node.js", "SQL Server", "Git" }),
+        ("Yapay Zeka Geliştirici Stajyeri", "Makine ve Kimya Endüstrisi", "Tem 2025 – Ağu 2025",
+            new[]
+            {
+                "Araç altı görüntülerinde tehlikeli madde tespiti için gerçek zamanlı AI sistemi geliştirdim.",
+                "EfficientNetB0 transfer learning ile CNN modeli eğittim; %75 doğruluk, %88 recall elde ettim.",
+                "Tehlikeli madde tespitinde %100 recall (sıfır kaçırılan tehdit) sağladım.",
+                "OpenCV ile 30 FPS kamera entegrasyonlu gerçek zamanlı görüntü işleme pipeline'ı kurdum."
+            },
+            new[] { "Python", "TensorFlow", "Keras", "OpenCV", "NumPy", "Pandas" }),
+        ("Stajyer", "TNCGROUP", "May 2025 – Haz 2025",
+            new[]
+            {
+                "Excel ile kişisel finans ve bütçe analiz sistemi geliştirdim.",
+                "AutoCAD ile ev kat planı tasarladım.",
+                "Adobe Photoshop ile iç mekan görselleştirme materyalleri hazırladım."
+            },
+            new[] { "Excel", "AutoCAD", "Adobe Photoshop" })
+    };
+
+    var projects = new (string Category, string Title, string Description, string[] Points, string[] Tech)[]
+    {
+        ("AI / Bilgisayarlı Görü", "Kamera Tabanlı Orman Yangını Tespit Sistemi",
+            "YOLO ve Mask R-CNN ile gerçek zamanlı yangın tespiti, Flask API, React Native mobil uygulama ve Firebase push bildirimleri.",
+            new[] { "Pixel düzeyinde etiketli veri seti hazırladım", "Webcam/video/görüntü girişleriyle masaüstü uygulama", "Canlı izleme ve anlık uyarı sistemi" },
+            new[] { "Python", "PyTorch", "YOLOv8", "Mask R-CNN", "OpenCV", "Flask", "React Native", "Firebase" }),
+        ("AI / Bilgisayarlı Görü", "Yüz Tanıma & El Hareketi Güvenlik Sistemi",
+            "Yüz tanıma ve kişiye özel el hareketi doğrulaması ile çok faktörlü erişim kontrolü ve Türkçe sesli asistan.",
+            new[] { "Random Forest ile el hareketi sınıflandırma", "Vosk ile çevrimdışı konuşma tanıma", "SQLite tabanlı görev/takvim yönetimi" },
+            new[] { "Python", "OpenCV", "MediaPipe", "scikit-learn", "Tkinter", "Vosk", "SQLite" }),
+        ("AI / Derin Öğrenme", "Mikro İfade ile Yalan Tespiti",
+            "DeepFace duygu analizi ve Keras MLP regresyon modeli ile gerçek zamanlı yalan tespit sistemi.",
+            new[] { "5 analiz yönteminin ağırlıklı ensemble'ı", "PyQt5 masaüstü uygulaması", "Dışa aktarılabilir analiz raporları" },
+            new[] { "Python", "PyQt5", "DeepFace", "TensorFlow", "OpenCV", "scikit-learn" }),
+        ("Full-Stack", "Kişisel Web Sitesi",
+            "N-Tier mimari ile ASP.NET Core MVC web uygulaması; Identity tabanlı kimlik doğrulama ve soru-cevap modülleri. Şu an gezdiğiniz site.",
+            new[] { "Core, Data, Business ve Web katmanları", "Rol tabanlı yetkilendirme (Admin / User)", "Özel request-logging middleware" },
+            new[] { "ASP.NET Core MVC", ".NET 9", "Entity Framework Core", "SQL Server" }),
+        ("Full-Stack", "Admin Dashboard",
+            "React ve Next.js ile kullanıcı ve sipariş yönetim paneli; korumalı rotalar ve istatistik modülleri.",
+            new[] { "Kimlik doğrulama ve oturum yönetimi", "Dinamik filtreleme ve istatistikler", "REST API entegrasyonu" },
+            new[] { "React", "Next.js", "JavaScript", "REST API" }),
+        ("Full-Stack", "QR Tabanlı Kafe Sipariş Sistemi",
+            "React ve Node.js/Express ile QR kodlu sipariş sistemi; yerel ağ üzerinden mobil erişim.",
+            new[] { "RESTful API tasarımı", "MySQL veri kalıcılığı", "Doğrulama ve hata senaryoları" },
+            new[] { "Node.js", "Express", "React", "MySQL" })
+    };
 }
 
 <div class="main-wrapper">
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero-section">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
                     <div class="hero-content">
+                        <span class="open-badge"><span class="dot"></span> Yeni fırsatlara açığım</span>
+                        <p class="hero-hello">Merhaba, ben</p>
                         <h1 class="glitch">Sude Nur Akyıldız</h1>
                         <div class="typing-text">
                             <span class="typed"></span>
                         </div>
                         <p class="hero-description">
-                            Bilecik Üniversitesi Bilgisayar Mühendisliği öğrencisiyim. Sürekli öğrenmeye açık ve farklı bakış açılarına değer veren biriyim. Her zaman en iyisini yapmaya çalışır ve karşılaştığım zorlukların üstesinden gelmek için çözüm odaklı yaklaşırım.
+                            Bilgisayar Mühendisliği mezunu. Yazılım geliştirme, yapay zeka, makine öğrenmesi ve bilgisayarlı görü alanlarında güçlü bir ilgiye sahibim. Gerçek dünya problemlerine akıllı çözümler üretmeyi, yeni teknolojiler öğrenmeyi ve yenilikçi projelere katkı sağlamayı hedefliyorum.
                         </p>
+                        <p class="hero-location"><i class="fas fa-map-marker-alt"></i> İstanbul, Türkiye</p>
                         <div class="hero-buttons">
-                            <a href="https://github.com/Sudeakyildz" class="btn btn-github" target="_blank">
-                                <i class="fab fa-github"></i> GitHub
-                            </a>
-                            <a href="https://www.linkedin.com/in/sude-a-9592b3343/" class="btn btn-linkedin" target="_blank">
-                                <i class="fab fa-linkedin"></i> LinkedIn
-                            </a>
+                            <a href="#projects" class="btn btn-primary"><i class="fas fa-folder-open"></i> Projelerimi Gör</a>
+                            <a href="https://sudeakyildz.github.io/pdf.html" class="btn btn-outline-primary" target="_blank" rel="noopener"><i class="fas fa-file-alt"></i> CV Görüntüle</a>
+                            <a href="https://github.com/Sudeakyildz" class="btn btn-github" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                            <a href="https://www.linkedin.com/in/sude-a-9592b3343/" class="btn btn-linkedin" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i> LinkedIn</a>
                         </div>
                     </div>
                 </div>
@@ -35,110 +106,159 @@
         </div>
     </section>
 
-    <!-- Skills Section -->
-    <section class="skills-section">
+    <!-- About -->
+    <section id="about" class="experience-section">
         <div class="container">
-            <h2 class="section-title">Yeteneklerim</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <h3>Programlama Dilleri</h3>
-                    <p>HTML, CSS, JavaScript, Python, Node.js, Java, C#, C++, C, MySQL, MSSQL, PostgreSQL</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-window-maximize"></i>
-                    </div>
-                    <h3>Teknolojiler</h3>
-                    <p>React.js, Express.js, Docker, ASP.NET Core</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-language"></i>
-                    </div>
-                    <h3>Diller</h3>
-                    <p>İngilizce (Orta), Almanca (Temel)</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section class="experience-section">
-        <div class="container">
-            <h2 class="section-title">Projelerim</h2>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <h3>Web Tabanlı Kafe Sipariş Programı</h3>
-                        <p>QR kod ile sipariş verme sistemi. Kullanıcılar QR kod ile sisteme erişip ürünleri sepete ekleyebilir ve sipariş sürecini tamamlayabilirler. Tüm işlemler veritabanında saklanır ve admin paneli üzerinden siparişler takip edilir.</p>
-                        <div class="tech-stack">
-                            <span>Frontend:</span> HTML, CSS, JavaScript
-                            <span>Backend:</span> Node.js, Express.js
-                            <span>Veritabanı:</span> MySQL
+            <h2 class="section-title">Hakkımda</h2>
+            <div class="row g-4 align-items-stretch">
+                <div class="col-lg-7">
+                    <div class="info-card h-100">
+                        <h3>Gerçek problemlere akıllı çözümler</h3>
+                        <p>
+                            Bilgisayar Mühendisliği mezunuyum. Yazılım geliştirme, yapay zeka, makine öğrenmesi ve bilgisayarlı görü alanlarında güçlü bir ilgiye sahibim.
+                            Full-stack web uygulamalarından gerçek zamanlı görüntü işleme sistemlerine kadar uçtan uca projeler geliştirdim.
+                        </p>
+                        <div class="edu">
+                            <i class="fas fa-graduation-cap"></i>
+                            <div>
+                                <strong>Bilecik Şeyh Edebali Üniversitesi</strong><br />
+                                Bilgisayar Mühendisliği Lisans · 2022 – 2026
+                            </div>
+                        </div>
+                        <div class="langs">
+                            <span class="chip"><i class="fas fa-language"></i> İngilizce · B1–B2</span>
+                            <span class="chip"><i class="fas fa-language"></i> Almanca · Temel</span>
                         </div>
                     </div>
                 </div>
+                <div class="col-lg-5">
+                    <div class="stats-grid h-100">
+                        <div class="stat"><strong>3</strong><span>Staj Deneyimi</span></div>
+                        <div class="stat"><strong>6</strong><span>Proje</span></div>
+                        <div class="stat"><strong>30+</strong><span>Teknoloji</span></div>
+                        <div class="stat"><strong>%100</strong><span>Tehdit Recall (AI Projesi)</span></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Experience Section -->
-    <section class="skills-section">
+    <!-- Skills -->
+    <section id="skills" class="skills-section">
+        <div class="container">
+            <h2 class="section-title">Yetenekler</h2>
+            <p class="section-lead">Yazılım geliştirmeden yapay zekaya, full-stack uygulamalardan bilgisayarlı görüye geniş bir teknoloji yelpazesi.</p>
+            <div class="skills-grid">
+                @foreach (var group in skillGroups)
+                {
+                    <div class="skill-card">
+                        <div class="skill-icon"><i class="fas @group.Icon"></i></div>
+                        <h3>@group.Title</h3>
+                        <div class="chips">
+                            @foreach (var item in group.Items)
+                            {
+                                <span class="chip">@item</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience -->
+    <section id="experience" class="experience-section">
         <div class="container">
             <h2 class="section-title">Deneyim</h2>
             <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <h3>Python Geliştirme</h3>
-                        <p>Python programlama dili ile uygulama geliştirme ve veri analizi projeleri</p>
+                @foreach (var exp in experiences)
+                {
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>@exp.Role</h3>
+                            <p class="exp-meta"><strong>@exp.Company</strong> · @exp.Period</p>
+                            <ul class="exp-points">
+                                @foreach (var point in exp.Points)
+                                {
+                                    <li>@point</li>
+                                }
+                            </ul>
+                            <div class="chips">
+                                @foreach (var t in exp.Tech)
+                                {
+                                    <span class="chip">@t</span>
+                                }
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <h3>Web Geliştirme</h3>
-                        <p>Modern web teknolojileri ile kullanıcı dostu uygulamalar geliştirme</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <h3>C/C++ Geliştirme</h3>
-                        <p>Sistem programlama ve düşük seviyeli uygulama geliştirme</p>
-                    </div>
-                </div>
+                }
             </div>
         </div>
     </section>
 
-    <!-- Education Section -->
-    <section class="experience-section">
+    <!-- Projects -->
+    <section id="projects" class="skills-section">
         <div class="container">
-            <h2 class="section-title">Eğitim</h2>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <h3>Bilecik Üniversitesi</h3>
-                        <p>Bilgisayar Mühendisliği (3. Sınıf)</p>
-                        <p>2022 - Devam Ediyor</p>
-                    </div>
-                </div>
+            <h2 class="section-title">Seçili Projeler</h2>
+            <p class="section-lead">Yapay zeka, bilgisayarlı görü ve full-stack web geliştirme alanlarından işler.</p>
+            <div class="projects-grid">
+                @foreach (var p in projects)
+                {
+                    <article class="project-card">
+                        <span class="pill">@p.Category</span>
+                        <h3>@p.Title</h3>
+                        <p>@p.Description</p>
+                        <ul class="exp-points">
+                            @foreach (var point in p.Points)
+                            {
+                                <li>@point</li>
+                            }
+                        </ul>
+                        <div class="chips">
+                            @foreach (var t in p.Tech)
+                            {
+                                <span class="chip">@t</span>
+                            }
+                        </div>
+                    </article>
+                }
             </div>
+            <p class="text-center mt-4">
+                <a href="https://github.com/Sudeakyildz" target="_blank" rel="noopener" class="btn btn-outline-primary">
+                    <i class="fab fa-github"></i> Tüm projeler GitHub'da
+                </a>
+            </p>
         </div>
     </section>
 
-    <!-- Q&A Section -->
+    <!-- Q&A -->
     <section class="qa-section">
         <div class="container">
             <div class="qa-card">
                 <div class="qa-content">
-                    <h2>Soru & Cevap</h2>
-                    <p>Yazılım geliştirme, web teknolojileri ve programlama konularında sorularınızı yanıtlamaktan mutluluk duyarım.</p>
-                    <a asp-controller="Question" asp-action="Index" class="btn btn-primary">
+                    <h2>Soru &amp; Cevap</h2>
+                    <p>Yazılım geliştirme, yapay zeka ve web teknolojileri hakkında merak ettiklerinizi sorabilirsiniz.</p>
+                    <a asp-controller="Question" asp-action="Index" class="btn btn-primary btn-lg">
                         <i class="fas fa-list"></i> Soruları Görüntüle
                     </a>
+                    <a asp-controller="Question" asp-action="Create" class="btn btn-outline-primary btn-lg ms-2">
+                        <i class="fas fa-pen"></i> Soru Sor
+                    </a>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="experience-section">
+        <div class="container text-center">
+            <h2 class="section-title">İletişim</h2>
+            <p class="section-lead">Yeni projeler, iş fırsatları veya iş birliği için bana ulaşabilirsiniz.</p>
+            <a href="mailto:Sudeaky5@gmail.com" class="btn btn-primary btn-lg"><i class="fas fa-envelope"></i> Sudeaky5@gmail.com</a>
+            <div class="mt-3 contact-links">
+                <a href="https://github.com/Sudeakyildz" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                <a href="https://www.linkedin.com/in/sude-a-9592b3343/" target="_blank" rel="noopener"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                <a href="https://sudeakyildz.github.io/" target="_blank" rel="noopener"><i class="fas fa-globe"></i> Portfolyo</a>
             </div>
         </div>
     </section>
@@ -147,11 +267,11 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
     <script>
-        // Typing animation
-        const typed = new Typed('.typed', {
-            strings: ['Bilgisayar Mühendisliği Öğrencisi', 'Bilgisayar Mühendisliği', 'Bilgisayar Mühendisliği'],
+        new Typed('.typed', {
+            strings: ['Bilgisayar Mühendisliği Mezunu', 'Yazılım Geliştirici', 'Yapay Zeka & Bilgisayarlı Görü'],
             typeSpeed: 50,
             backSpeed: 30,
+            backDelay: 1500,
             loop: true
         });
     </script>

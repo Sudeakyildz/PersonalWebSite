@@ -22,19 +22,12 @@ namespace PersonalWebSite.Business.Services
                 .ToListAsync();
         }
 
-        public async Task<Answer> GetAnswerByIdAsync(int id)
+        public async Task<Answer?> GetAnswerByIdAsync(int id)
         {
-            var answer = await _context.Answers
+            return await _context.Answers
                 .Include(a => a.User)
                 .Include(a => a.Question)
                 .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (answer == null)
-            {
-                throw new KeyNotFoundException($"ID'si {id} olan cevap bulunamadı.");
-            }
-
-            return answer;
         }
 
         public async Task<IEnumerable<Answer>> GetAnswersByQuestionIdAsync(int questionId)

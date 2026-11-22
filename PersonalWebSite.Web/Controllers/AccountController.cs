@@ -43,6 +43,7 @@ namespace PersonalWebSite.Web.Controllers
                 {
                     await _userManager.AddToRoleAsync(user, "User");
                     await _signInManager.SignInAsync(user, isPersistent: false);
+                    TempData["SuccessMessage"] = "Hoş geldiniz! Hesabınız oluşturuldu.";
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -70,14 +71,20 @@ namespace PersonalWebSite.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
 
-                ModelState.AddModelError(string.Empty, "Geçersiz giriş denemesi.");
+                if (result.IsLockedOut)
+                {
+                    ModelState.AddModelError(string.Empty, "Çok fazla başarısız deneme yapıldı. Lütfen birkaç dakika sonra tekrar deneyin.");
+                    return View(model);
+                }
+
+                ModelState.AddModelError(string.Empty, "E-posta veya şifre hatalı.");
             }
 
             return View(model);

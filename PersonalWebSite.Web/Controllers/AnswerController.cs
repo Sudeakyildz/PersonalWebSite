@@ -7,6 +7,8 @@ using PersonalWebSite.Web.Models;
 
 namespace PersonalWebSite.Web.Controllers
 {
+    // Sadece Admin cevap yazabilir, düzenleyebilir ve silebilir.
+    [Authorize(Roles = "Admin")]
     public class AnswerController : Controller
     {
         private readonly IAnswerService _answerService;
@@ -23,8 +25,8 @@ namespace PersonalWebSite.Web.Controllers
             _userManager = userManager;
         }
 
-        // GET: Answer/Create
-        [Authorize(Roles = "Admin")]
+        // GET: Answer/Create?questionId=5
+        [HttpGet]
         public async Task<IActionResult> Create(int questionId)
         {
             var question = await _questionService.GetQuestionByIdAsync(questionId);
@@ -33,61 +35,55 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            ViewBag.Question = question;
-            ViewBag.IsAdmin = true;
-            return View();
+            return View(new CreateAnswerViewModel
+            {
+                QuestionId = questionId,
+                QuestionTitle = question.Title,
+                QuestionContent = question.Content
+            });
         }
 
         // POST: Answer/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(int questionId, [Bind("Content")] Answer answer)
+        public async Task<IActionResult> Create(CreateAnswerViewModel model)
         {
-            try
+            var question = await _questionService.GetQuestionByIdAsync(model.QuestionId);
+            if (question == null)
             {
-                if (string.IsNullOrWhiteSpace(answer.Content))
-                {
-                    ModelState.AddModelError("Content", "Cevap içeriği boş olamaz.");
-                    var existingQuestion = await _questionService.GetQuestionByIdAsync(questionId);
-                    ViewBag.Question = existingQuestion;
-                    ViewBag.IsAdmin = true;
-                    return View(answer);
-                }
-
-                var question = await _questionService.GetQuestionByIdAsync(questionId);
-                if (question == null)
-                {
-                    return NotFound();
-                }
-
-                var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null)
-                {
-                    return Unauthorized();
-                }
-
-                answer.QuestionId = questionId;
-                answer.UserId = currentUser.Id;
-                answer.CreatedAt = DateTime.UtcNow;
-                answer.IsActive = true;
-
-                await _answerService.CreateAnswerAsync(answer);
-                TempData["SuccessMessage"] = "Cevabınız başarıyla gönderildi.";
-                return RedirectToAction("Details", "Question", new { id = questionId });
+                return NotFound();
             }
-            catch (Exception ex)
+
+            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Content))
             {
-                ModelState.AddModelError("", "Cevap gönderilirken bir hata oluştu: " + ex.Message);
-                var existingQuestion = await _questionService.GetQuestionByIdAsync(questionId);
-                ViewBag.Question = existingQuestion;
-                ViewBag.IsAdmin = true;
-                return View(answer);
+                if (string.IsNullOrWhiteSpace(model.Content))
+                {
+                    ModelState.AddModelError(nameof(model.Content), "Cevap içeriği boş olamaz.");
+                }
+                model.QuestionTitle = question.Title;
+                model.QuestionContent = question.Content;
+                return View(model);
             }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Challenge();
+            }
+
+            await _answerService.CreateAnswerAsync(new Answer
+            {
+                QuestionId = model.QuestionId,
+                UserId = currentUser.Id,
+                Content = model.Content.Trim()
+            });
+
+            TempData["SuccessMessage"] = "Cevabınız başarıyla gönderildi.";
+            return RedirectToAction("Details", "Question", new { id = model.QuestionId });
         }
 
         // GET: Answer/Edit/5
-        [Authorize(Roles = "Admin")]
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var answer = await _answerService.GetAnswerByIdAsync(id);
@@ -96,24 +92,12 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            var viewModel = new AnswerViewModel
-            {
-                Id = answer.Id,
-                Content = answer.Content,
-                QuestionId = answer.QuestionId,
-                UserName = answer.User.UserName,
-                CreatedAt = answer.CreatedAt,
-                UpdatedAt = answer.UpdatedAt,
-                IsActive = answer.IsActive
-            };
-
-            return View(viewModel);
+            return View(answer.ToViewModel());
         }
 
         // POST: Answer/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Content")] AnswerViewModel viewModel)
         {
             if (id != viewModel.Id)
@@ -121,86 +105,42 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var existingAnswer = await _answerService.GetAnswerByIdAsync(id);
+            if (existingAnswer == null)
             {
-                try
-                {
-                    var existingAnswer = await _answerService.GetAnswerByIdAsync(id);
-                    if (existingAnswer == null)
-                    {
-                        return NotFound();
-                    }
-
-                    existingAnswer.Content = viewModel.Content;
-                    existingAnswer.UpdatedAt = DateTime.UtcNow;
-
-                    await _answerService.UpdateAnswerAsync(existingAnswer);
-                    TempData["SuccessMessage"] = "Cevabınız başarıyla güncellendi.";
-                    return RedirectToAction("Details", "Question", new { id = existingAnswer.QuestionId });
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Cevap güncellenirken bir hata oluştu: " + ex.Message);
-                }
+                return NotFound();
             }
-            return View(viewModel);
+
+            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(viewModel.Content))
+            {
+                viewModel.QuestionId = existingAnswer.QuestionId;
+                viewModel.AuthorName = ViewModelMapper.DisplayName(existingAnswer.User);
+                return View(viewModel);
+            }
+
+            existingAnswer.Content = viewModel.Content.Trim();
+            await _answerService.UpdateAnswerAsync(existingAnswer);
+
+            TempData["SuccessMessage"] = "Cevap güncellendi.";
+            return RedirectToAction("Details", "Question", new { id = existingAnswer.QuestionId });
         }
 
         // POST: Answer/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
+            var answer = await _answerService.GetAnswerByIdAsync(id);
+            if (answer == null)
             {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] AnswerController.Delete tetiklendi. id: {id}");
-                
-                var answer = await _answerService.GetAnswerByIdAsync(id);
-                if (answer == null)
-                {
-                    System.Diagnostics.Debug.WriteLine("[DEBUG] Silinecek cevap bulunamadı.");
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                var questionId = answer.QuestionId;
-                await _answerService.DeleteAnswerAsync(id);
-                TempData["SuccessMessage"] = "Cevap başarıyla silindi.";
-                return RedirectToAction("Details", "Question", new { id = questionId });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Silme hatası: {ex.Message}");
-                TempData["ErrorMessage"] = "Cevap silinirken bir hata oluştu: " + ex.Message;
-                return RedirectToAction("Details", "Question", new { id = id });
-            }
-        }
+            var questionId = answer.QuestionId;
+            await _answerService.DeleteAnswerAsync(id);
 
-        // Test için GET action
-        [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteTest(int id)
-        {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] AnswerController.DeleteTest tetiklendi. id: {id}");
-                
-                var answer = await _answerService.GetAnswerByIdAsync(id);
-                if (answer == null)
-                {
-                    return NotFound();
-                }
-
-                var questionId = answer.QuestionId;
-                await _answerService.DeleteAnswerAsync(id);
-                TempData["SuccessMessage"] = "Cevap başarıyla silindi (GET ile test).";
-                return RedirectToAction("Details", "Question", new { id = questionId });
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "Cevap silinirken bir hata oluştu: " + ex.Message;
-                return RedirectToAction("Details", "Question", new { id = id });
-            }
+            TempData["SuccessMessage"] = "Cevap silindi.";
+            return RedirectToAction("Details", "Question", new { id = questionId });
         }
     }
-} 
+}

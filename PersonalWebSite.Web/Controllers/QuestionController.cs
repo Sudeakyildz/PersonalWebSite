@@ -10,81 +10,105 @@ namespace PersonalWebSite.Web.Controllers
     [Route("Question")]
     public class QuestionController : Controller
     {
+        private const int PageSize = 6;
+
         private readonly IQuestionService _questionService;
-        private readonly IAnswerService _answerService;
         private readonly UserManager<User> _userManager;
 
-        public QuestionController(
-            IQuestionService questionService,
-            IAnswerService answerService,
-            UserManager<User> userManager)
+        public QuestionController(IQuestionService questionService, UserManager<User> userManager)
         {
             _questionService = questionService;
-            _answerService = answerService;
             _userManager = userManager;
         }
 
-        // API Endpoints
+        // ---------- JSON API (herkese açık, hassas alan içermez) ----------
+
         [HttpGet("api")]
         [Produces("application/json")]
         public async Task<IActionResult> GetQuestionsApi()
         {
             var questions = await _questionService.GetAllQuestionsAsync();
-            return Json(questions);
+            return Json(questions.Select(q => new
+            {
+                q.Id,
+                q.Title,
+                q.Content,
+                Author = ViewModelMapper.DisplayName(q.User),
+                q.CreatedAt,
+                q.UpdatedAt,
+                AnswerCount = q.Answers.Count
+            }));
         }
 
-        [HttpGet("api/{id}")]
+        [HttpGet("api/{id:int}")]
         [Produces("application/json")]
         public async Task<IActionResult> GetQuestionApi(int id)
         {
             var question = await _questionService.GetQuestionByIdAsync(id);
             if (question == null)
                 return NotFound();
-            return Json(question);
+
+            return Json(new
+            {
+                question.Id,
+                question.Title,
+                question.Content,
+                Author = ViewModelMapper.DisplayName(question.User),
+                question.CreatedAt,
+                question.UpdatedAt,
+                Answers = question.Answers.OrderBy(a => a.CreatedAt).Select(a => new
+                {
+                    a.Id,
+                    a.Content,
+                    Author = ViewModelMapper.DisplayName(a.User),
+                    a.CreatedAt,
+                    a.UpdatedAt
+                })
+            });
         }
 
-        [HttpGet("api/{id}/answers")]
+        [HttpGet("api/{id:int}/answers")]
         [Produces("application/json")]
         public async Task<IActionResult> GetQuestionAnswersApi(int id)
         {
+            var question = await _questionService.GetQuestionByIdAsync(id);
+            if (question == null)
+                return NotFound();
+
             var answers = await _questionService.GetQuestionAnswersAsync(id);
-            return Json(answers);
+            return Json(answers.Select(a => new
+            {
+                a.Id,
+                a.Content,
+                Author = ViewModelMapper.DisplayName(a.User),
+                a.CreatedAt,
+                a.UpdatedAt
+            }));
         }
 
-        // GET: Question
-        [HttpGet]
-        [Route("")]
-        [Route("Index")]
+        // ---------- MVC ----------
+
+        // GET: Question?search=...&page=1
+        [HttpGet("")]
+        [HttpGet("Index")]
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? search, int page = 1)
         {
-            var questions = await _questionService.GetAllQuestionsAsync();
-            var viewModels = questions.Select(q => new QuestionViewModel
+            var result = await _questionService.GetQuestionsPagedAsync(search, page, PageSize);
+
+            var model = new QuestionListViewModel
             {
-                Id = q.Id,
-                Title = q.Title,
-                Content = q.Content,
-                UserName = q.User?.UserName ?? "Silinmiş Kullanıcı",
-                CreatedAt = q.CreatedAt,
-                UpdatedAt = q.UpdatedAt,
-                IsActive = q.IsActive,
-                Answers = q.Answers?.Select(a => new AnswerViewModel
-                {
-                    Id = a.Id,
-                    Content = a.Content,
-                    QuestionId = a.QuestionId,
-                    UserName = a.User?.UserName ?? "Silinmiş Kullanıcı",
-                    CreatedAt = a.CreatedAt,
-                    UpdatedAt = a.UpdatedAt,
-                    IsActive = a.IsActive
-                }).ToList() ?? new List<AnswerViewModel>()
-            });
-            return View(viewModels);
+                Questions = result.Items.Select(q => q.ToViewModel()).ToList(),
+                Search = search,
+                Page = result.Page,
+                TotalPages = result.TotalPages,
+                TotalCount = result.TotalCount
+            };
+            return View(model);
         }
 
         // GET: Question/Details/5
-        [HttpGet]
-        [Route("Details/{id:int}")]
+        [HttpGet("Details/{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
@@ -94,72 +118,48 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            var viewModel = new QuestionViewModel
-            {
-                Id = question.Id,
-                Title = question.Title,
-                Content = question.Content,
-                UserName = question.User?.UserName ?? "Silinmiş Kullanıcı",
-                CreatedAt = question.CreatedAt,
-                UpdatedAt = question.UpdatedAt,
-                IsActive = question.IsActive,
-                Answers = question.Answers?.Select(a => new AnswerViewModel
-                {
-                    Id = a.Id,
-                    Content = a.Content,
-                    QuestionId = a.QuestionId,
-                    UserName = a.User?.UserName ?? "Silinmiş Kullanıcı",
-                    CreatedAt = a.CreatedAt,
-                    UpdatedAt = a.UpdatedAt,
-                    IsActive = a.IsActive
-                }).ToList() ?? new List<AnswerViewModel>()
-            };
-
-            return View(viewModel);
+            var userId = _userManager.GetUserId(User);
+            return View(question.ToViewModel(userId, User.IsInRole("Admin")));
         }
 
         // GET: Question/Create
-        [HttpGet]
-        [Route("Create")]
+        [HttpGet("Create")]
         [Authorize]
         public IActionResult Create()
         {
-            return View();
+            return View(new QuestionViewModel());
         }
 
         // POST: Question/Create
-        [HttpPost]
-        [Route("Create")]
+        [HttpPost("Create")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Create([Bind("Title,Content")] QuestionViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null)
-                {
-                    return Unauthorized();
-                }
-
-                var question = new Question
-                {
-                    Title = viewModel.Title,
-                    Content = viewModel.Content,
-                    UserId = currentUser.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-
-                await _questionService.CreateQuestionAsync(question);
-                return RedirectToAction(nameof(Index));
+                return View(viewModel);
             }
-            return View(viewModel);
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+            {
+                return Challenge();
+            }
+
+            var question = await _questionService.CreateQuestionAsync(new Question
+            {
+                Title = viewModel.Title.Trim(),
+                Content = viewModel.Content.Trim(),
+                UserId = currentUser.Id
+            });
+
+            TempData["SuccessMessage"] = "Sorunuz başarıyla yayınlandı.";
+            return RedirectToAction(nameof(Details), new { id = question.Id });
         }
 
         // GET: Question/Edit/5
-        [HttpGet]
-        [Route("Edit/{id:int}")]
+        [HttpGet("Edit/{id:int}")]
         [Authorize]
         public async Task<IActionResult> Edit(int id)
         {
@@ -169,29 +169,16 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null || (question.UserId != currentUser.Id && !User.IsInRole("Admin")))
+            if (!await CanManageAsync(question))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
-            var viewModel = new QuestionViewModel
-            {
-                Id = question.Id,
-                Title = question.Title,
-                Content = question.Content,
-                UserName = question.User?.UserName ?? "Silinmiş Kullanıcı",
-                CreatedAt = question.CreatedAt,
-                UpdatedAt = question.UpdatedAt,
-                IsActive = question.IsActive
-            };
-
-            return View(viewModel);
+            return View(question.ToViewModel());
         }
 
         // POST: Question/Edit/5
-        [HttpPost]
-        [Route("Edit/{id:int}")]
+        [HttpPost("Edit/{id:int}")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Content")] QuestionViewModel viewModel)
@@ -201,32 +188,32 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var existingQuestion = await _questionService.GetQuestionByIdAsync(id);
+            if (existingQuestion == null)
             {
-                var existingQuestion = await _questionService.GetQuestionByIdAsync(id);
-                if (existingQuestion == null)
-                {
-                    return NotFound();
-                }
-
-                var currentUser = await _userManager.GetUserAsync(User);
-                if (currentUser == null || (existingQuestion.UserId != currentUser.Id && !User.IsInRole("Admin")))
-                {
-                    return Unauthorized();
-                }
-
-                existingQuestion.Title = viewModel.Title;
-                existingQuestion.Content = viewModel.Content;
-                existingQuestion.UpdatedAt = DateTime.UtcNow;
-
-                await _questionService.UpdateQuestionAsync(existingQuestion);
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            return View(viewModel);
+
+            if (!await CanManageAsync(existingQuestion))
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            existingQuestion.Title = viewModel.Title.Trim();
+            existingQuestion.Content = viewModel.Content.Trim();
+
+            await _questionService.UpdateQuestionAsync(existingQuestion);
+            TempData["SuccessMessage"] = "Soru güncellendi.";
+            return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpPost]
-        [Route("Delete/{id:int}")]
+        // POST: Question/Delete/5
+        [HttpPost("Delete/{id:int}")]
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
@@ -237,10 +224,9 @@ namespace PersonalWebSite.Web.Controllers
                 return NotFound();
             }
 
-            var currentUser = await _userManager.GetUserAsync(User);
-            if (currentUser == null || (question.UserId != currentUser.Id && !User.IsInRole("Admin")))
+            if (!await CanManageAsync(question))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             await _questionService.DeleteQuestionAsync(id);
@@ -248,31 +234,11 @@ namespace PersonalWebSite.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet]
-        [Route("DeleteTest/{id:int}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteTest(int id)
+        private Task<bool> CanManageAsync(Question question)
         {
-            try
-            {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] QuestionController.DeleteTest tetiklendi. id: {id}");
-                
-                var question = await _questionService.GetQuestionByIdAsync(id);
-                if (question == null)
-                {
-                    return NotFound();
-                }
-
-                await _questionService.DeleteQuestionAsync(id);
-                TempData["SuccessMessage"] = "Soru başarıyla silindi.";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Soru silme hatası: {ex.Message}");
-                TempData["ErrorMessage"] = "Soru silinirken bir hata oluştu: " + ex.Message;
-                return RedirectToAction(nameof(Index));
-            }
+            var userId = _userManager.GetUserId(User);
+            var allowed = User.IsInRole("Admin") || (userId != null && question.UserId == userId);
+            return Task.FromResult(allowed);
         }
     }
-} 
+}

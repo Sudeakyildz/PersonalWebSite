@@ -23,20 +23,46 @@ namespace PersonalWebSite.Business.Services
                 .ToListAsync();
         }
 
-        public async Task<Question> GetQuestionByIdAsync(int id)
+        public async Task<PagedResult<Question>> GetQuestionsPagedAsync(string? search, int page, int pageSize)
         {
-            var question = await _context.Questions
+            pageSize = Math.Clamp(pageSize, 1, 50);
+
+            var query = _context.Questions.AsNoTracking().AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim();
+                query = query.Where(q => q.Title.Contains(term) || q.Content.Contains(term));
+            }
+
+            var total = await query.CountAsync();
+            var totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)pageSize));
+            page = Math.Clamp(page, 1, totalPages);
+
+            var items = await query
+                .Include(q => q.User)
+                .Include(q => q.Answers)
+                .OrderByDescending(q => q.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Question>
+            {
+                Items = items,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = total
+            };
+        }
+
+        public async Task<Question?> GetQuestionByIdAsync(int id)
+        {
+            return await _context.Questions
                 .Include(q => q.User)
                 .Include(q => q.Answers)
                     .ThenInclude(a => a.User)
                 .FirstOrDefaultAsync(q => q.Id == id);
-
-            if (question == null)
-            {
-                throw new KeyNotFoundException($"ID'si {id} olan soru bulunamadı.");
-            }
-
-            return question;
         }
 
         public async Task<Question> CreateQuestionAsync(Question question)

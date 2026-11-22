@@ -1,62 +1,75 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var fullWidth = ViewData["FullWidth"] as bool? ?? false;
+    string Active(string name) => string.Equals(controller, name, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sude Nur Akyıldız - Bilgisayar Mühendisliği mezunu, yazılım geliştirici. Yapay zeka, bilgisayarlı görü ve full-stack projeler; soru-cevap platformu." />
     <title>@ViewData["Title"] - Sude Nur Akyıldız</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-primary border-bottom box-shadow mb-3">
+    <header class="site-header">
+        <nav class="navbar navbar-expand-md site-navbar">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Sude Nur Akyıldız</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark">S</span> Sude Nur Akyıldız
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Menüyü aç/kapat">
+                    <i class="fas fa-bars"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+                            <a class="nav-link @Active("Home")" asp-controller="Home" asp-action="Index">
                                 <i class="fas fa-home"></i> Ana Sayfa
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="Question" asp-action="Index">
-                                <i class="fas fa-question-circle"></i> Sorular
+                            <a class="nav-link @Active("Question")" asp-controller="Question" asp-action="Index">
+                                <i class="fas fa-comments"></i> Soru & Cevap
                             </a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav align-items-md-center">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <span class="nav-link text-white">
-                                    <i class="fas fa-user"></i> @User.Identity.Name
+                                <span class="nav-link user-chip">
+                                    <i class="fas fa-user-circle"></i> @User.Identity.Name
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <span class="badge badge-admin">Admin</span>
+                                    }
                                 </span>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0);" onclick="document.getElementById('logoutForm').submit();" class="nav-link text-white">
-                                    <i class="fas fa-sign-out-alt"></i> Çıkış Yap
-                                </a>
-                                <form id="logoutForm" asp-area="" asp-controller="Account" asp-action="Logout" method="post" style="display: none;">
-                                    @Html.AntiForgeryToken()
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="nav-link btn btn-link logout-btn">
+                                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                                    </button>
                                 </form>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Account" asp-action="Login">
+                                <a class="nav-link @Active("Account")" asp-controller="Account" asp-action="Login">
                                     <i class="fas fa-sign-in-alt"></i> Giriş Yap
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Account" asp-action="Register">
+                                <a class="btn btn-nav-cta" asp-controller="Account" asp-action="Register">
                                     <i class="fas fa-user-plus"></i> Kayıt Ol
                                 </a>
                             </li>
@@ -66,31 +79,63 @@
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="flash-area container">
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @TempData["SuccessMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
             </div>
         }
         @if (TempData["ErrorMessage"] != null)
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
             </div>
         }
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-primary text-white">
-        <div class="container text-center py-3">
-            &copy; @DateTime.Now.Year - Kişisel Web Sitem
+    @if (fullWidth)
+    {
+        <main role="main" class="site-main">
+            @RenderBody()
+        </main>
+    }
+    else
+    {
+        <main role="main" class="site-main container py-4">
+            @RenderBody()
+        </main>
+    }
+
+    <footer class="site-footer">
+        <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+            <span>&copy; @DateTime.Now.Year Sude Nur Akyıldız</span>
+            <span class="footer-links">
+                <a href="https://github.com/Sudeakyildz" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.linkedin.com/in/sude-a-9592b3343/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+            </span>
         </div>
     </footer>
+
+    <!-- Silme gibi işlemler için onay penceresi (tarayıcının confirm() penceresi yerine) -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="modal-title h5" id="confirmModalTitle"><i class="fas fa-exclamation-triangle text-danger"></i> Emin misiniz?</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body" id="confirmModalMessage"></div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-danger" id="confirmModalOk">Evet, sil</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
